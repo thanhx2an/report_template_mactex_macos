@@ -1,0 +1,13 @@
+# algpseudocode commands are written without braces, e.g. "\State \Return x"
+Silent
+{
+    \State \Statex \Require \Ensure \Return \Comment
+    \EndFor \EndIf \EndWhile \Else \algorithmicto
+    \listofalgorithms \listoflistings
+}
+
+# Their content is printed as-is (prompts, code), so skip typography checks inside
+VerbEnvir
+{
+    Verbatim minted
+}

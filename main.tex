@@ -1,0 +1,570 @@
+\documentclass[12pt,a4paper]{report}
+
+% ==================================================
+% PAGE SETUP
+% ==================================================
+
+\usepackage[a4paper,margin=1in]{geometry}
+
+% ==================================================
+% GENERAL PACKAGES
+% ==================================================
+\usepackage{csquotes}
+
+\usepackage[
+    backend=biber,
+    style=apa,
+    sorting=nyt,
+    url=true,
+    doi=true,
+    isbn=false,
+    eprint=false,
+    labelnumber=true
+]{biblatex}
+\DeclareLanguageMapping{english}{english-apa}
+\DeclareCiteCommand{\parencite}[\mkbibparens]
+    {\usebibmacro{prenote}}
+    {\printtext[bibhyperref]{%
+        \printnames{labelname}%
+        \setunit{\nameyeardelim}%
+        \printfield{labelyear}%
+        \printfield{extradate}%
+    }}
+    {\multicitedelim}
+    {\usebibmacro{postnote}}
+
+\usepackage{xpatch}
+% Link the author name in \textcite too (APA links only the year by default)
+\xpatchbibmacro{textcite}
+    {\printnames{labelname}}
+    {\printtext[bibhyperref]{\printnames{labelname}}}
+    {}{\PackageWarning{main}{Could not patch textcite author link}}
+\xpatchbibmacro{textcite}
+    {\printnames[labelname]{author}}
+    {\printtext[bibhyperref]{\printnames[labelname]{author}}}
+    {}{\PackageWarning{main}{Could not patch textcite author link}}
+
+\addbibresource{references.bib}
+
+% =====================================
+% BIBLIOGRAPHY FORMATTING
+% =====================================
+
+\DefineBibliographyStrings{english}{
+    bibliography = {References}
+}
+
+\setlength{\bibitemsep}{0.8\baselineskip}
+
+\setlength{\bibhang}{0pt}
+
+% Number the reference list as [1], [2], ... with the entry text hanging under
+% the number; in-text citations stay APA author-year
+\DeclareFieldFormat{labelnumberwidth}{\mkbibbrackets{#1}}
+\defbibenvironment{bibliography}
+  {\list%
+     {\printtext[labelnumberwidth]{\printfield{labelnumber}}}
+     {\setlength{\labelwidth}{\labelnumberwidth}%
+      \setlength{\leftmargin}{\labelwidth}%
+      \setlength{\labelsep}{\biblabelsep}%
+      \addtolength{\leftmargin}{\labelsep}%
+      \setlength{\itemsep}{\bibitemsep}%
+      \setlength{\parsep}{\bibparsep}}%
+   \renewcommand*{\makelabel}[1]{\hss##1}}
+  {\endlist}
+  {\item}
+
+\Urlmuskip=0mu plus 1mu
+
+\usepackage{fontspec}
+\IfFontExistsTF{TeX Gyre Pagella}{
+    \setmainfont{TeX Gyre Pagella}
+}{
+    \setmainfont{Times New Roman}
+}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{graphicx}
+\usepackage{float}
+% Default placement: here if it fits, otherwise let text continue and move the float
+\makeatletter
+\renewcommand{\fps@figure}{!htbp}
+\renewcommand{\fps@table}{!htbp}
+\makeatother
+% A float gets a page of its own only when it fills most of the page;
+% smaller floats go at the top of a page with text continuing below
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.6}
+\renewcommand{\textfraction}{0.1}
+% When a page does hold only floats (e.g. floats flushed at the end of a
+% chapter), stack them from the top of the page instead of centring them
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{\floatsep}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{tocloft}
+\renewcommand{\cftchapaftersnum}{.}
+\renewcommand{\cftsecaftersnum}{.}
+\renewcommand{\cfttabaftersnum}{\hspace{0.6em}}
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+\setlength{\cftbeforechapskip}{8pt}
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\thechapter}{\Roman{chapter}}
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\contentsname}{Table of Contents}
+\renewcommand{\cfttoctitlefont}{\fontsize{26}{26}\selectfont\bfseries}
+\renewcommand{\cftloftitlefont}{\fontsize{26}{26}\selectfont\bfseries}
+\renewcommand{\cftlottitlefont}{\fontsize{26}{26}\selectfont\bfseries}
+\setlength{\cftchapnumwidth}{1cm}
+\setlength{\cfttabnumwidth}{3.2em}
+\setlength{\cftfignumwidth}{3.2em}
+\renewcommand{\cftfigaftersnum}{\hspace{0.6em}}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+% Multi-line "Input:" whose lines align under the first one and may break across pages
+\newlength{\alginputwidth}
+\newcommand{\AlgInputs}[1]{\Require
+  \settowidth{\alginputwidth}{\algorithmicrequire}%
+  \hangindent=\dimexpr\alginputwidth+\labelsep\relax\hangafter=1 #1}
+\algrenewcommand{\algorithmiccomment}[1]{\hfill{\ttfamily // #1}}
+\newcommand{\algorithmicto}{\textbf{to}}
+% Ruled algorithm block (rules + "Algorithm N: title"); place it inside \begin{algorithm}[!htbp]
+\makeatletter
+\newenvironment{ruledalgorithm}[1]{%
+  \setlength{\parskip}{0pt}%
+  \refstepcounter{algorithm}%
+  \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}#1}%
+  \hrule height 1.2pt depth0pt \kern3pt
+  {\raggedright\textbf{\ALG@name~\thealgorithm:} #1\par}%
+  \kern3pt\hrule height 0.6pt\kern2pt
+}{%
+  \kern2pt\hrule height 0.6pt\relax
+}
+\makeatother
+% The algorithm float draws nothing itself; ruledalgorithm inside it draws the rules
+\floatstyle{plain}
+\restylefloat{algorithm}
+\usepackage{amsmath}
+\counterwithout{equation}{chapter}
+\usepackage{amssymb}
+% bm must come after the symbol fonts so it has bold versions of them
+\usepackage{bm}
+
+\usepackage{setspace}
+
+\usepackage{hyperref}
+\usepackage{xurl}
+\urlstyle{same}
+\usepackage{bookmark}
+
+
+\usepackage{titlesec}
+
+\titleformat{\chapter}[display]
+    {\normalfont\bfseries\singlespacing}
+    {\fontsize{26}{26}\selectfont\chaptertitlename\ \thechapter}
+    {14pt}
+    {\fontsize{26}{26}\selectfont\textit}
+   [\vspace{20pt}{\color{gray}\titlerule}]
+% Unnumbered chapters (Declaration, Acknowledgement): centred italic title, no rule
+\titleformat{name=\chapter,numberless}[block]
+    {\normalfont\singlespacing\centering}
+    {}
+    {0pt}
+    {\fontsize{26}{30}\selectfont\textit}
+\titlespacing*{\chapter}{0pt}{32pt}{20pt}
+\titlespacing*{\section}{0pt}{2ex plus 0.5ex minus 0.2ex}{1ex plus 0.2ex}
+\titleformat{\section}[hang]
+    {\normalfont\Large\bfseries}
+    {\thesection.}
+    {0.4em}
+    {}
+\titleformat{\subsection}[hang]
+    {\normalfont\large\bfseries}
+    {\thesubsection}
+    {0.4em}
+    {}
+
+\usepackage{caption}
+\captionsetup{labelsep=period, font=it, belowskip=8pt}
+\usepackage{subcaption}
+
+\usepackage{enumitem}
+% Small, fixed gap between a list and the surrounding text
+\setlist{topsep=4pt, partopsep=0pt}
+% Indent the first paragraph after a heading as well
+\usepackage{indentfirst}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{listings}
+
+\usepackage{minted}
+% algorithm sets the ruled float style (rules above/below, caption on top);
+% give listings the plain style so they look like figures
+\floatstyle{plain}
+\restylefloat{listing}
+
+% Running-header text of the front-matter lists: the title in italic
+\renewcommand{\cftmarktoc}{\markboth{\textit{\contentsname}}{}}
+\renewcommand{\cftmarklof}{\markboth{\textit{\listfigurename}}{}}
+\renewcommand{\cftmarklot}{\markboth{\textit{\listtablename}}{}}
+% List of Listings / Algorithms (float package): reuse tocloft's List of Figures
+% title code instead of \chapter*, so all lists share one title layout
+\makeatletter
+\renewcommand*{\float@listhead}[1]{%
+  \clearpage
+  \begingroup
+    \setlength{\parindent}{0pt}%
+    \setlength{\parskip}{\cftparskip}%
+    \renewcommand{\listfigurename}{#1}%
+    \renewcommand{\cftmarklof}{\markboth{\textit{#1}}{}}%
+    \@cftmakeloftitle%
+  \endgroup}
+\makeatother
+
+\definecolor{codebg}{HTML}{FDF7F0}   % nền màu da rất nhạt, phân biệt với khung xám của figure
+\setminted{
+  style=friendly,     % Pygments style nền sáng, đọc tốt khi in
+  linenos,            % đánh số dòng, để tham chiếu dòng khi cần
+  numbersep=6pt,
+  fontsize=\small,
+  breaklines,         % dòng dài tự xuống hàng, không tràn lề
+  breaksymbolleft={}, % không hiện mũi tên ↪ ở dòng bị ngắt
+  tabsize=2,
+}
+% VS Code-like colours (light-theme versions of Dark+). Python code uses the
+% custom lexer lexers/vscode_python.py, which tags called functions (nf),
+% classes (nc), keyword arguments (nt) and attributes (na) separately.
+% Applied after every style load, so the base style cannot override them.
+\makeatletter
+\newcommand{\mintedtok}[2]{\@namedef{PYG@tok@#1}{\def\PYG@tc####1{\textcolor[HTML]{#2}{####1}}}}
+\newcommand{\mintedVSCodeColors}{%
+  \mintedtok{n}{1F2328}%    variables
+  \mintedtok{nf}{1A6BC4}%   functions / methods
+  \mintedtok{nc}{1A7F86}%   classes
+  \mintedtok{nt}{C4352B}%   keyword arguments
+  \mintedtok{na}{6F42C1}%   attributes
+  \mintedtok{no}{3949AB}%   ALL_CAPS constants
+  \mintedtok{ne}{1A7F86}%   exception classes
+  \mintedtok{nb}{1A7F86}%   built-ins
+  \mintedtok{k}{A626A4}%    keywords
+  \mintedtok{kn}{A626A4}%   import / from
+  \mintedtok{ow}{A626A4}%   in, and, or, not
+  \mintedtok{kc}{A626A4}%   True, False, None
+  \mintedtok{p}{B07B00}%    brackets and commas
+  \mintedtok{o}{0F7C8A}%    operators
+  \mintedtok{s}{B5530F}\mintedtok{s1}{B5530F}\mintedtok{s2}{B5530F}\mintedtok{sd}{B5530F}%
+  \mintedtok{mi}{2E7D32}\mintedtok{mf}{2E7D32}%   numbers
+  \mintedtok{c1}{7A7F87}\mintedtok{c}{7A7F87}\mintedtok{cm}{7A7F87}%   comments
+}
+\apptocmd{\minted@patch@PygmentsStyledef}{\mintedVSCodeColors}{}{\PackageWarning{main}{Could not apply VS Code colours}}
+\makeatother
+% Frame and background drawn by tcolorbox, with left padding so the line
+% numbers sit inside the frame (minted/fvextra can only frame the code itself)
+\tcbset{mintedframe/.style={enhanced, sharp corners,
+    colback=codebg, frame hidden,
+    left=2.2em, right=6pt, top=4pt, bottom=4pt}}
+% Breakable only outside floats: inside a listing float the code cannot split
+% anyway, and breakable mode adds gaps after wrapped lines
+\AddToHook{env/minted/before}{%
+  \ifcsname @captype\endcsname% chktex 1
+    \tcolorbox[mintedframe]%
+  \else
+    \tcolorbox[mintedframe, breakable]%
+  \fi}
+\AddToHook{env/minted/after}{\endtcolorbox}
+
+% ==================================================
+% LINE SPACING
+% ==================================================
+
+\onehalfspacing{}
+
+% ==================================================
+% HYPERLINK SETUP
+% ==================================================
+
+\definecolor{linknavy}{RGB}{38,58,110}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linknavy,
+    citecolor=linknavy,
+    urlcolor=linknavy,
+    filecolor=linknavy,
+    pdftitle={Thesis Report},
+    pdfauthor={Nguyen Thanh Nhan}
+}
+% ==================================================
+% CODE LISTING STYLE
+% ==================================================
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=8pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstdefinelanguage{JavaScript}{
+    keywords={
+        break, case, catch, class, const, continue, debugger, default, delete, do,
+        else, export, extends, finally, for, function, if, import, in, instanceof,
+        let, new, return, super, switch, this, throw, try, typeof, var, void, while,
+        with, yield, async, await, enum, implements, interface, package, private, protected, public, static
+    },
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]'',
+    morestring=[b]'
+}
+
+\lstdefinelanguage{bash}{
+    keywords={
+        cd, ls, echo, curl, exit, pwd, mv, cp, rm, mkdir, touch, cat, grep, find,
+        sed, awk, chmod, chown, sudo, export, source
+    },
+    sensitive=true,
+    comment=[l]{\#},
+    morestring=[b]'',
+    morestring=[b]'
+}
+
+\lstdefinelanguage{json}{
+    keywords={true,false,null},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]'',
+    morestring=[b]'
+}
+
+\lstdefinelanguage{yaml}{
+    keywords={true,false,null},
+    sensitive=true,
+    comment=[l]{\#},
+    morestring=[b]'',
+    morestring=[b]'
+}
+
+\lstdefinelanguage{CDS}{
+    keywords={
+        entity, aspect, type, view, service, annotate, using, extends,
+        select, from, where, group, by, order, limit,
+        key, association, composition, to, many, one, on,
+        enum, default, temporal,
+        cuid, managed
+    },
+    sensitive=true,
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]'',
+    morestring=[b]'
+}
+
+\lstset{style=mystyle}
+
+% ==================================================
+% HEADER / FOOTER
+% ==================================================
+
+\setlength{\headheight}{14.5pt}
+
+\renewcommand{\chaptermark}[1]{\markboth{\chaptername\ \thechapter.\ \textit{#1}}{}}
+
+\fancypagestyle{frontmatter}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0.4pt}
+    \renewcommand{\footrulewidth}{0pt}
+    % Same layout as the chapters: italic section title and page number,
+    % swapped between even and odd pages
+    \fancyhead[L]{\ifodd\value{page}\thepage\else\leftmark\fi}
+    \fancyhead[R]{\ifodd\value{page}\leftmark\else\thepage\fi}
+}
+
+\fancypagestyle{mainmatter}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0.4pt}
+    \renewcommand{\footrulewidth}{0pt}
+    % Even pages: chapter left, page number right. Odd pages: swapped.
+    \fancyhead[L]{\ifodd\value{page}\thepage\else\leftmark\fi}
+    \fancyhead[R]{\ifodd\value{page}\leftmark\else\thepage\fi}
+}
+
+\fancypagestyle{empty}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+}
+% ==================================================
+% DOCUMENT INFO
+% ==================================================
+
+\title{Thesis Report}
+\author{Nguyen Thanh Nhan}
+\date{2026}
+
+% ==================================================
+% BEGIN DOCUMENT
+% ==================================================
+
+\begin{document}
+
+% ==================================================
+% TITLE PAGE
+% ==================================================
+
+\pagestyle{empty}
+\input{frontmatter/titlepage}
+
+% ==================================================
+% FRONT MATTER
+% ==================================================
+
+\clearpage
+\pagenumbering{roman}
+\pagestyle{frontmatter}
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \fancyfoot[C]{\thepage}
+}
+
+\input{frontmatter/declaration}
+\input{frontmatter/acknowledgement}
+\input{frontmatter/abstract}
+
+\input{frontmatter/toc}
+\newpage
+\input{frontmatter/list_of_figures}
+\newpage
+\input{frontmatter/list_of_tables}
+\newpage
+\input{frontmatter/list_of_listings}
+\newpage
+\input{frontmatter/list_of_algorithms}
+% \newpage 
+% \input{frontmatter/list_of_abbreviations}
+
+% ==================================================
+% MAIN CONTENT
+% ==================================================
+
+\clearpage
+
+\pagenumbering{arabic}
+\pagestyle{mainmatter}
+% Chapters: paragraphs are marked by a first-line indent, not a blank line
+% (the front matter sets its own \parskip/\parindent)
+\setlength{\parindent}{3em}
+\setlength{\parskip}{0pt}
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \fancyfoot[C]{\thepage}
+}
+% --------------------------------------------------
+% INTRODUCTION
+% --------------------------------------------------
+
+\input{chapters/introduction}
+
+% --------------------------------------------------
+% LITERATURE REVIEW
+% --------------------------------------------------
+
+\input{chapters/literature_review}
+
+% --------------------------------------------------
+% METHODOLOGY
+% --------------------------------------------------
+
+\input{chapters/methodology}
+
+% --------------------------------------------------
+% BACKGROUND
+% --------------------------------------------------
+
+\input{chapters/background}
+
+
+
+
+% --------------------------------------------------
+% DATA SOURCE
+% --------------------------------------------------
+
+\input{chapters/data_source}
+
+% --------------------------------------------------
+% IMPLEMENTATION
+% --------------------------------------------------
+
+\input{chapters/implementation}
+
+% --------------------------------------------------
+% EXPERIMENTAL RESULTS
+% --------------------------------------------------
+
+\input{chapters/experimental_results}
+
+% --------------------------------------------------
+% CONCLUSION AND FUTURE WORKS
+% --------------------------------------------------
+
+\input{chapters/conclusion}
+
+% --------------------------------------------------
+% REFERENCES
+% --------------------------------------------------
+
+\clearpage
+\chapter{References}\label{ch:references}
+\printbibliography[heading=none]
+
+
+
+
+% ==================================================
+% END DOCUMENT
+% ==================================================
+
+\end{document}
+
